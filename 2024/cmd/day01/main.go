@@ -3,7 +3,6 @@ package main
 import (
 	"advent-of-code/pkg/utils"
 	"fmt"
-	"math"
 	"regexp"
 	"sort"
 )
@@ -15,14 +14,36 @@ func main() {
 }
 
 func solveDay01(input string) int {
-	list1, list2 := parseAndSortLists(input)
+	left, right := parseAndSortLists(input)
 
-	distances := 0
-	for i := 0; i < len(list1); i++ {
-		distances += int(math.Abs(float64(list1[i] - list2[i])))
+	similarityScore := 0
+	// as the lists are sorted, keep a pointer on the right list
+	ri := 0
+	for i := 0; i < len(left); i++ {
+		// left value
+		lv := left[i]
+
+		// skip elements in right if smaller
+		for ri+1 < len(right) && right[ri] < lv {
+			ri++
+		}
+
+		// count appearance in right
+		count := 0
+		for lv == right[ri] {
+			count++
+			ri++
+		}
+
+		similarityScore += lv * count
+
+		// look ahead in left list if the value appears again and revert ri if it is the case
+		if i+1 < len(left) && left[i+1] == lv {
+			ri -= count
+		}
 	}
 
-	return distances
+	return similarityScore
 }
 
 func parseAndSortLists(input string) ([]int, []int) {
