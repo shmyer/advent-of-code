@@ -10,7 +10,7 @@ import (
 func main() {
 	input := utils.ReadFile("inputs/day03.txt")
 	result := solve(input)
-	fmt.Println("Result for Day 1:", result)
+	fmt.Println("Result for Day 3:", result)
 }
 
 func solve(input string) int {
