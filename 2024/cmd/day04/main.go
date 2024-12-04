@@ -10,13 +10,17 @@ const search = "XMAS"
 
 func main() {
 	input := utils.ReadFile("inputs/day04.txt")
-	result := solve(input)
-	fmt.Println("Result for Day 4:", result)
+	result := solvePart1(input)
+	fmt.Println("Result for Day 4 Part 1:", result)
+
+	result = solvePart2(input)
+	fmt.Println("Result for Day 4 Part 2:", result)
 }
 
-func solve(input string) int {
+// part 1
+func solvePart1(input string) int {
 
-	lines := strings.Split(input, "\n")
+	lines := strings.Split(input, "\r\n")
 
 	count := 0
 	for y, line := range lines {
@@ -89,4 +93,42 @@ func countTrue(flags ...bool) int {
 		}
 	}
 	return count
+}
+
+func solvePart2(input string) int {
+
+	lines := strings.Split(input, "\r\n")
+
+	count := 0
+	for y, line := range lines {
+
+		for x, char := range line {
+			// skip all non-A characters
+			if char != 'A' {
+				continue
+			}
+
+			if isXMas(lines, x, y) {
+				count++
+			}
+		}
+	}
+
+	return count
+}
+
+func isXMas(lines []string, x int, y int) bool {
+	lengthX := len(lines[y])
+	lengthY := len(lines)
+
+	// check boundaries first as they can't be true.
+	if x == 0 || x == lengthX-1 || y == 0 || y == lengthY-1 {
+		return false
+	}
+
+	return isSAndM(lines, x-1, y-1, x+1, y+1) && isSAndM(lines, x-1, y+1, x+1, y-1)
+}
+
+func isSAndM(lines []string, x1 int, y1 int, x2 int, y2 int) bool {
+	return lines[y1][x1] == 'S' && lines[y2][x2] == 'M' || lines[y1][x1] == 'M' && lines[y2][x2] == 'S'
 }
