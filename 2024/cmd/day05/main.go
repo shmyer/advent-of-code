@@ -32,35 +32,36 @@ func validUpdates(updates string, allowedAfter map[int][]int, allowedBefore map[
 	for _, line := range lines {
 		pages := atoiSlice(strings.Split(line, ","))
 
-		if validUpdate(pages, allowedAfter, allowedBefore) {
-			fmt.Printf("Valid line: %s\n", line)
+		valid, _, _ := validUpdate(pages, allowedAfter, allowedBefore)
+		if valid {
 			count += pages[len(pages)/2]
 		}
 	}
 	return count
 }
 
-func validUpdate(pages []int, allowedAfter map[int][]int, allowedBefore map[int][]int) bool {
+func validUpdate(pages []int, allowedAfter map[int][]int, allowedBefore map[int][]int) (bool, int, int) {
 	for i := range pages {
-		if !validPage(pages, i, allowedAfter, allowedBefore) {
-			return false
+		valid, currIdx, nextIdx := validPage(pages, i, allowedAfter, allowedBefore)
+		if !valid {
+			return false, currIdx, nextIdx
 		}
 	}
-	return true
+	return true, -1, -1
 }
 
-func validPage(pages []int, currIdx int, allowedAfter map[int][]int, allowedBefore map[int][]int) bool {
+func validPage(pages []int, currIdx int, allowedAfter map[int][]int, allowedBefore map[int][]int) (bool, int, int) {
 	current := pages[currIdx]
 
 	for nextIdx, next := range pages {
 		if nextIdx > currIdx && !slices.Contains(allowedAfter[current], next) {
-			return false
+			return false, currIdx, nextIdx
 		}
 		if nextIdx < currIdx && !slices.Contains(allowedBefore[current], next) {
-			return false
+			return false, currIdx, nextIdx
 		}
 	}
-	return true
+	return true, -1, -1
 }
 
 func parseRules(rawRules string) (map[int][]int, map[int][]int) {
@@ -102,5 +103,35 @@ func atoiSlice(pages []string) []int {
 
 // part 2
 func solvePart2(input string) int {
-	return 0
+	rulesAndUpdates := strings.Split(input, "\r\n\r\n")
+
+	allowedAfter, allowedBefore := parseRules(rulesAndUpdates[0])
+
+	return validUpdatesPart2(rulesAndUpdates[1], allowedAfter, allowedBefore)
+}
+
+func validUpdatesPart2(updates string, allowedAfter map[int][]int, allowedBefore map[int][]int) int {
+	lines := strings.Split(updates, "\r\n")
+
+	count := 0
+	for _, line := range lines {
+		pages := atoiSlice(strings.Split(line, ","))
+
+		valid, currIdx, nextIdx := validUpdate(pages, allowedAfter, allowedBefore)
+		if valid {
+			continue
+		}
+		for !valid {
+			// switch the incorrect indexes until it is valid
+			pages[currIdx], pages[nextIdx] = pages[nextIdx], pages[currIdx]
+			valid, currIdx, nextIdx = validUpdate(pages, allowedAfter, allowedBefore)
+		}
+
+		if valid {
+			count += pages[len(pages)/2]
+		} else {
+			fmt.Printf("Invalid line: %s\n", line)
+		}
+	}
+	return count
 }
